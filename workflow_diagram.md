@@ -14,10 +14,16 @@ graph TB
         RA[Reasoning Agent<br/>DeepSeek API]
     end
     
-    subgraph "Data Sources"
-        RAG[RAG System]
-        DB[(Travel Database)]
+    subgraph "RAG System"
+        RAG[RAG System<br/>Vector Database]
         TEMPLATES[Itinerary Templates]
+        DESTINATIONS[Travel Destinations]
+        PACKAGES[Travel Packages]
+        OFFERS[Special Offers]
+        ACCOMMODATIONS[Hotels & Lodging]
+        ACTIVITIES[Activities & Tours]
+        RESTAURANTS[Restaurants & Dining]
+        PRICING[Pricing & Availability]
     end
     
     subgraph "Output"
@@ -27,8 +33,14 @@ graph TB
     UI --> SA
     SA --> CA
     CA --> RAG
-    RAG --> DB
-    CA --> TEMPLATES
+    RAG --> TEMPLATES
+    RAG --> DESTINATIONS
+    RAG --> PACKAGES
+    RAG --> OFFERS
+    RAG --> ACCOMMODATIONS
+    RAG --> ACTIVITIES
+    RAG --> RESTAURANTS
+    RAG --> PRICING
     CA --> RA
     SA --> RA
     RA --> ITINERARY
@@ -38,8 +50,14 @@ graph TB
     style CA fill:#f3e5f5
     style RA fill:#ffcdd2
     style RAG fill:#c8e6c9
-    style DB fill:#c8e6c9
     style TEMPLATES fill:#fff9c4
+    style DESTINATIONS fill:#fff9c4
+    style PACKAGES fill:#fff9c4
+    style OFFERS fill:#fff9c4
+    style ACCOMMODATIONS fill:#fff9c4
+    style ACTIVITIES fill:#fff9c4
+    style RESTAURANTS fill:#fff9c4
+    style PRICING fill:#fff9c4
     style ITINERARY fill:#ffecb3
 ```
 
