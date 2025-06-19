@@ -1,6 +1,6 @@
-# Travel Itinerary Generation System - Simplified Workflow
+# Multi-Agent Travel Itinerary System
 
-## High-Level System Architecture
+## Three-Agent Architecture
 
 ```mermaid
 graph TB
@@ -8,71 +8,96 @@ graph TB
         UI[Web Chat Interface]
     end
     
-    subgraph "Core System"
-        AGENT[Conversational Agent]
+    subgraph "Agent System"
+        SA[Strategist Agent<br/>LangChain]
+        CA[Copywriter Agent<br/>LangChain + RAG]
+        RA[Reasoning Agent<br/>DeepSeek API]
+    end
+    
+    subgraph "Data Sources"
         RAG[RAG System]
         DB[(Travel Database)]
+        TEMPLATES[Itinerary Templates]
     end
     
     subgraph "Output"
-        ITINERARY[Generated Itinerary]
+        ITINERARY[Final Itinerary]
     end
     
-    UI --> AGENT
-    AGENT --> RAG
+    UI --> SA
+    SA --> RA
+    RA --> CA
+    CA --> RAG
     RAG --> DB
-    AGENT --> ITINERARY
+    CA --> TEMPLATES
+    CA --> RA
+    RA --> ITINERARY
     
     style UI fill:#e1f5fe
-    style AGENT fill:#fff3e0
-    style RAG fill:#f3e5f5
+    style SA fill:#fff3e0
+    style CA fill:#f3e5f5
+    style RA fill:#ffcdd2
+    style RAG fill:#c8e6c9
     style DB fill:#c8e6c9
+    style TEMPLATES fill:#fff9c4
     style ITINERARY fill:#ffecb3
 ```
 
-## Simple Workflow Process
+## Agent Workflow
 
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant A as Agent
-    participant R as RAG
-    participant D as Database
+    participant SA as Strategist Agent
+    participant RA as Reasoning Agent
+    participant CA as Copywriter Agent
+    participant RAG as RAG System
     
-    U->>A: "I want to plan a trip to Paris"
-    A->>U: "What's your budget range?"
-    
-    U->>A: "Around $3000"
-    A->>U: "What type of travel do you prefer?"
-    
-    U->>A: "Cultural and food experiences"
-    A->>R: Query relevant travel plans
-    
-    R->>D: Search database
-    D->>R: Return matching plans
-    R->>A: Send recommendations
-    
-    A->>U: Present personalized itinerary
+    U->>SA: "I want to plan a trip to Paris"
+    SA->>U: "What's your budget and travel dates?"
+    U->>SA: "Around $3000, June 15-22"
+    SA->>RA: Validate requirements
+    RA->>SA: Requirements approved
+    SA->>CA: Pass requirements
+    CA->>RAG: Query travel plans
+    RAG->>CA: Return relevant data
+    CA->>RA: Send itinerary for verification
+    RA->>CA: Verification complete
+    CA->>U: Present final itinerary
 ```
+
+## Three Agents
+
+### 1. **Strategist Agent (LangChain)**
+- Collects user requirements (destination, dates, budget, interests)
+- Manages conversation flow and validation
+- Passes complete requirements to Reasoning Agent
+
+### 2. **Copywriter Agent (LangChain + RAG)**
+- Queries company database via RAG system
+- Uses itinerary templates and company data
+- Creates personalized day-by-day itineraries
+- Sends to Reasoning Agent for verification
+
+### 3. **Reasoning Agent (DeepSeek API)**
+- Validates user requirements for consistency
+- Verifies itinerary matches all requirements
+- Checks budget, dates, and logical flow
+- Provides final approval or revision requests
 
 ## Key Components
 
-### 1. **Conversational Agent**
-- Collects user preferences (destination, budget, interests)
-- Manages conversation flow
-- Generates final itinerary
-
-### 2. **RAG System**
+### 1. **RAG System**
 - Searches company's travel database
 - Finds relevant travel plans and offers
 - Provides context for itinerary generation
 
-### 3. **Travel Database**
+### 2. **Travel Database**
 - Stores company's travel packages
 - Contains pricing, activities, accommodations
 - Includes special offers and deals
 
-### 4. **Output**
+### 3. **Output**
 - Personalized travel itinerary
 - Day-by-day schedule
 - Budget breakdown
