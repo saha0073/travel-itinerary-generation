@@ -50,8 +50,8 @@ sequenceDiagram
     participant U as User
     participant SA as Strategist Agent
     participant CA as Copywriter Agent
-    participant RA as Reasoning Agent
     participant RAG as RAG System
+    participant RA as Reasoning Agent
     
     U->>SA: "I want to plan a trip to Paris"
     SA->>U: "What's your budget and travel dates?"
@@ -142,4 +142,37 @@ If verification passes:
 - Provide confidence score and quality assessment
 
 Output: Verification report with approval status, quality score, and any revision requests.
+```
+
+## Sample Itinerary Output
+
+```
+PARIS CULTURAL ADVENTURE - June 15-22, 2024
+Budget: $3,000 | Travelers: 2 | Style: Cultural
+
+DAY 1 (June 15): Arrival & Eiffel Tower
+• 2:00 PM: Check-in at Hotel Le Marais (3-star, $120/night)
+• 4:00 PM: Eiffel Tower visit with skip-the-line tickets ($60)
+• 7:00 PM: Dinner at Le Petit Bistrot ($80)
+• 9:00 PM: Seine River evening walk
+
+DAY 2 (June 16): Art & Museums
+• 9:00 AM: Louvre Museum guided tour ($120)
+• 1:00 PM: Lunch at Café Marly ($60)
+• 3:00 PM: Musée d'Orsay ($40)
+• 6:00 PM: Montmartre & Sacré-Cœur visit
+• 8:00 PM: Dinner at Le Consulat ($70)
+
+DAY 3 (June 17): Architecture & Shopping
+• 10:00 AM: Notre-Dame Cathedral (exterior visit)
+• 12:00 PM: Lunch at Le Marais district ($50)
+• 2:00 PM: Champs-Élysées & Arc de Triomphe ($30)
+• 5:00 PM: Shopping at Galeries Lafayette
+• 8:00 PM: Dinner at traditional bistro ($65)
+
+[Days 4-7 continue with similar detailed planning...]
+
+TOTAL ESTIMATED COST: $2,850
+Includes: Accommodation, activities, meals, local transport
+Quality Score: 9.2/10 - All requirements met ✓
 ``` 
