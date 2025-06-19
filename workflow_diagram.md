@@ -17,12 +17,8 @@ graph TB
     subgraph "RAG System"
         RAG[RAG System<br/>Vector Database]
         TEMPLATES[Itinerary Templates]
-        DESTINATIONS[Travel Destinations]
         PACKAGES[Travel Packages]
-        OFFERS[Special Offers]
-        ACCOMMODATIONS[Hotels & Lodging]
         ACTIVITIES[Activities & Tours]
-        RESTAURANTS[Restaurants & Dining]
         PRICING[Pricing & Availability]
     end
     
@@ -34,12 +30,8 @@ graph TB
     SA --> CA
     CA --> RAG
     RAG --> TEMPLATES
-    RAG --> DESTINATIONS
     RAG --> PACKAGES
-    RAG --> OFFERS
-    RAG --> ACCOMMODATIONS
     RAG --> ACTIVITIES
-    RAG --> RESTAURANTS
     RAG --> PRICING
     CA --> RA
     SA --> RA
@@ -51,12 +43,8 @@ graph TB
     style RA fill:#ffcdd2
     style RAG fill:#c8e6c9
     style TEMPLATES fill:#fff9c4
-    style DESTINATIONS fill:#fff9c4
     style PACKAGES fill:#fff9c4
-    style OFFERS fill:#fff9c4
-    style ACCOMMODATIONS fill:#fff9c4
     style ACTIVITIES fill:#fff9c4
-    style RESTAURANTS fill:#fff9c4
     style PRICING fill:#fff9c4
     style ITINERARY fill:#ffecb3
 ```
