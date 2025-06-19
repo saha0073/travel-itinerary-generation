@@ -25,12 +25,12 @@ graph TB
     end
     
     UI --> SA
-    SA --> RA
-    RA --> CA
+    SA --> CA
     CA --> RAG
     RAG --> DB
     CA --> TEMPLATES
     CA --> RA
+    SA --> RA
     RA --> ITINERARY
     
     style UI fill:#e1f5fe
@@ -49,21 +49,20 @@ graph TB
 sequenceDiagram
     participant U as User
     participant SA as Strategist Agent
-    participant RA as Reasoning Agent
     participant CA as Copywriter Agent
+    participant RA as Reasoning Agent
     participant RAG as RAG System
     
     U->>SA: "I want to plan a trip to Paris"
     SA->>U: "What's your budget and travel dates?"
     U->>SA: "Around $3000, June 15-22"
-    SA->>RA: Validate requirements
-    RA->>SA: Requirements approved
-    SA->>CA: Pass requirements
+    SA->>CA: Pass user requirements
     CA->>RAG: Query travel plans
     RAG->>CA: Return relevant data
-    CA->>RA: Send itinerary for verification
-    RA->>CA: Verification complete
-    CA->>U: Present final itinerary
+    CA->>RA: Send generated itinerary
+    SA->>RA: Send original requirements
+    RA->>RA: Compare requirements vs itinerary
+    RA->>U: Present final verified itinerary
 ```
 
 ## Three Agents
@@ -71,17 +70,18 @@ sequenceDiagram
 ### 1. **Strategist Agent (LangChain)**
 - Collects user requirements (destination, dates, budget, interests)
 - Manages conversation flow and validation
-- Passes complete requirements to Reasoning Agent
+- Passes complete requirements to Copywriter Agent
 
 ### 2. **Copywriter Agent (LangChain + RAG)**
 - Queries company database via RAG system
 - Uses itinerary templates and company data
 - Creates personalized day-by-day itineraries
-- Sends to Reasoning Agent for verification
+- Sends itinerary to Reasoning Agent for verification
 
 ### 3. **Reasoning Agent (DeepSeek API)**
-- Validates user requirements for consistency
-- Verifies itinerary matches all requirements
+- Receives user requirements from Strategist Agent
+- Receives generated itinerary from Copywriter Agent
+- Compares and validates consistency between requirements and itinerary
 - Checks budget, dates, and logical flow
 - Provides final approval or revision requests
 
