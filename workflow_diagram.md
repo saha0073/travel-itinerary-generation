@@ -1,223 +1,79 @@
-# Travel Itinerary Generation Workflow
+# Travel Itinerary Generation System - Simplified Workflow
 
-## System Architecture Diagram
+## High-Level System Architecture
 
 ```mermaid
 graph TB
     subgraph "User Interface"
-        UI[Streamlit Web App]
+        UI[Web Chat Interface]
     end
     
-    subgraph "Conversational Agent"
-        CA[Conversation Agent]
-        IG[Itinerary Generator]
-        SM[Session Manager]
+    subgraph "Core System"
+        AGENT[Conversational Agent]
+        RAG[RAG System]
+        DB[(Travel Database)]
     end
     
-    subgraph "RAG System"
-        VS[Vector Store<br/>ChromaDB]
-        RET[Retriever]
-        EMB[Embedding Model]
+    subgraph "Output"
+        ITINERARY[Generated Itinerary]
     end
     
-    subgraph "Database"
-        DB[(SQL Database)]
-        TP[Travel Plans]
-        OF[Offers]
-        US[User Sessions]
-    end
+    UI --> AGENT
+    AGENT --> RAG
+    RAG --> DB
+    AGENT --> ITINERARY
     
-    subgraph "External APIs"
-        WEATHER[Weather API]
-        MAPS[Maps API]
-        CURRENCY[Currency API]
-    end
-    
-    UI --> CA
-    CA --> SM
-    CA --> IG
-    
-    IG --> RET
-    RET --> VS
-    VS --> EMB
-    EMB --> DB
-    
-    IG --> WEATHER
-    IG --> MAPS
-    IG --> CURRENCY
-    
-    SM --> US
-    CA --> US
+    style UI fill:#e1f5fe
+    style AGENT fill:#fff3e0
+    style RAG fill:#f3e5f5
+    style DB fill:#c8e6c9
+    style ITINERARY fill:#ffecb3
 ```
 
-## Detailed Workflow Process
+## Simple Workflow Process
 
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant CA as Conversation Agent
-    participant RAG as RAG System
-    participant DB as Database
-    participant IG as Itinerary Generator
+    participant A as Agent
+    participant R as RAG
+    participant D as Database
     
-    U->>CA: Start conversation
-    CA->>U: Greet and ask for destination
+    U->>A: "I want to plan a trip to Paris"
+    A->>U: "What's your budget range?"
     
-    U->>CA: Provide destination
-    CA->>U: Ask for travel dates
+    U->>A: "Around $3000"
+    A->>U: "What type of travel do you prefer?"
     
-    U->>CA: Provide dates
-    CA->>U: Ask for budget range
+    U->>A: "Cultural and food experiences"
+    A->>R: Query relevant travel plans
     
-    U->>CA: Provide budget
-    CA->>U: Ask for travel style (luxury/budget/adventure)
+    R->>D: Search database
+    D->>R: Return matching plans
+    R->>A: Send recommendations
     
-    U->>CA: Provide preferences
-    CA->>U: Ask for interests (culture, food, nature, etc.)
-    
-    U->>CA: Provide interests
-    CA->>RAG: Query relevant travel plans
-    
-    RAG->>DB: Retrieve matching offers
-    DB->>RAG: Return travel plans
-    
-    RAG->>CA: Return relevant data
-    CA->>IG: Generate itinerary
-    
-    IG->>IG: Process preferences + RAG data
-    IG->>CA: Return itinerary
-    
-    CA->>U: Present itinerary
-    U->>CA: Request modifications
-    
-    CA->>IG: Refine itinerary
-    IG->>CA: Return updated itinerary
-    CA->>U: Present final itinerary
+    A->>U: Present personalized itinerary
 ```
 
-## Data Flow Diagram
+## Key Components
 
-```mermaid
-flowchart LR
-    subgraph "Input Processing"
-        A[User Input] --> B[Intent Recognition]
-        B --> C[Entity Extraction]
-        C --> D[Preference Collection]
-    end
-    
-    subgraph "RAG Processing"
-        D --> E[Query Formation]
-        E --> F[Vector Search]
-        F --> G[Relevant Data Retrieval]
-    end
-    
-    subgraph "Itinerary Generation"
-        G --> H[Data Integration]
-        H --> I[Constraint Satisfaction]
-        I --> J[Itinerary Creation]
-    end
-    
-    subgraph "Output"
-        J --> K[Formatted Itinerary]
-        K --> L[User Presentation]
-    end
-    
-    style A fill:#e1f5fe
-    style L fill:#c8e6c9
-    style G fill:#fff3e0
-    style J fill:#f3e5f5
-```
+### 1. **Conversational Agent**
+- Collects user preferences (destination, budget, interests)
+- Manages conversation flow
+- Generates final itinerary
 
-## Database Schema
+### 2. **RAG System**
+- Searches company's travel database
+- Finds relevant travel plans and offers
+- Provides context for itinerary generation
 
-```mermaid
-erDiagram
-    TRAVEL_PLANS {
-        int id PK
-        string destination
-        string title
-        text description
-        decimal price
-        int duration_days
-        string travel_style
-        json activities
-        json accommodations
-        json transportation
-        boolean is_active
-        datetime created_at
-    }
-    
-    OFFERS {
-        int id PK
-        int travel_plan_id FK
-        string offer_type
-        decimal discount_percentage
-        date valid_from
-        date valid_until
-        text terms_conditions
-        boolean is_active
-    }
-    
-    USER_SESSIONS {
-        int id PK
-        string session_id
-        json preferences
-        json conversation_history
-        datetime created_at
-        datetime last_updated
-    }
-    
-    ITINERARIES {
-        int id PK
-        int session_id FK
-        text itinerary_content
-        json metadata
-        datetime created_at
-        string status
-    }
-    
-    TRAVEL_PLANS ||--o{ OFFERS : "has"
-    USER_SESSIONS ||--o{ ITINERARIES : "generates"
-```
+### 3. **Travel Database**
+- Stores company's travel packages
+- Contains pricing, activities, accommodations
+- Includes special offers and deals
 
-## Key Components Description
-
-### 1. Conversation Agent
-- **Purpose**: Manages natural language interaction with users
-- **Functions**: 
-  - Intent recognition and entity extraction
-  - Progressive preference collection
-  - Context maintenance across conversation
-  - Itinerary presentation and refinement
-
-### 2. RAG System
-- **Purpose**: Retrieves relevant travel information from company database
-- **Components**:
-  - Vector store (ChromaDB) for semantic search
-  - Embedding model for text vectorization
-  - Retriever for relevant document fetching
-  - Query processing and ranking
-
-### 3. Itinerary Generator
-- **Purpose**: Creates personalized travel itineraries
-- **Process**:
-  - Integrates user preferences with retrieved data
-  - Applies business rules and constraints
-  - Generates day-by-day itinerary
-  - Handles budget optimization
-
-### 4. Database Layer
-- **Purpose**: Stores company's travel plans, offers, and user data
-- **Tables**:
-  - Travel Plans: Company's travel packages
-  - Offers: Special deals and promotions
-  - User Sessions: Conversation state management
-  - Itineraries: Generated travel plans
-
-## Implementation Notes
-
-1. **Vector Embeddings**: Use sentence-transformers for travel plan embeddings
-2. **Conversation State**: Maintain session state for multi-turn conversations
-3. **Budget Optimization**: Implement constraint satisfaction for budget-aware recommendations
-4. **Real-time Updates**: Integrate with external APIs for current pricing and availability
-5. **Personalization**: Use collaborative filtering for similar user recommendations 
+### 4. **Output**
+- Personalized travel itinerary
+- Day-by-day schedule
+- Budget breakdown
+- Activity recommendations 
