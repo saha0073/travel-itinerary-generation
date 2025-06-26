@@ -149,11 +149,4 @@ For comprehensive workflow diagrams, agent interaction sequences, and detailed s
 - Sample itinerary output format
 - System interaction flows
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test with the Streamlit interface
-5. Submit a pull request
 

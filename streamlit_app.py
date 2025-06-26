@@ -39,6 +39,10 @@ if "current_agent" not in st.session_state:
     st.session_state.current_agent = "none"
 if "agent_outputs" not in st.session_state:
     st.session_state.agent_outputs = {"strategist": "", "copywriter": "", "verification": ""}
+if "agent_status" not in st.session_state:
+    st.session_state.agent_status = {"strategist": "pending", "copywriter": "pending", "verification": "pending"}
+if "current_prompt" not in st.session_state:
+    st.session_state.current_prompt = ""
 
 def initialize_agents():
     """Initialize all agents"""
@@ -209,6 +213,8 @@ def main():
             st.session_state.processing_complete = False
             st.session_state.current_agent = "none"
             st.session_state.agent_outputs = {"strategist": "", "copywriter": "", "verification": ""}
+            st.session_state.agent_status = {"strategist": "pending", "copywriter": "pending", "verification": "pending"}
+            st.session_state.current_prompt = ""
             st.rerun()
     
     # Main chat interface
@@ -222,38 +228,98 @@ def main():
     
     # Chat input
     if prompt := st.chat_input("Describe your travel plans (e.g., 'I want to travel to Manali from Delhi, September 1-10, 2025. Please create a travel itinerary.')"):
+        # Start new process
+        st.session_state.current_prompt = prompt
+        st.session_state.agent_status = {"strategist": "pending", "copywriter": "pending", "verification": "pending"}
+        st.session_state.processing_complete = False
+        st.session_state.current_agent = "none"
+        
         # Add user message to chat
         st.session_state.messages.append({"role": "user", "content": prompt})
         st.chat_message("user").write(prompt)
-        
-        # Process the complete request
-        st.info("🚀 Starting travel planning process...")
-        strategist_output, copywriter_output, verification_output = process_travel_request(prompt)
-        
-        # Add agent responses to chat
-        if strategist_output and not strategist_output.startswith("Error"):
-            st.session_state.messages.append({"role": "assistant", "content": f"🤔 **Strategist Agent Analysis:**\n\n{strategist_output}"})
-            st.chat_message("assistant").write(f"🤔 **Strategist Agent Analysis:**\n\n{strategist_output}")
-            st.session_state.agent_outputs["strategist"] = strategist_output
-        
-        if copywriter_output and not copywriter_output.startswith("Error"):
-            st.session_state.messages.append({"role": "assistant", "content": f"✍️ **Copywriter Agent Itinerary:**\n\n{copywriter_output}"})
-            st.chat_message("assistant").write(f"✍️ **Copywriter Agent Itinerary:**\n\n{copywriter_output}")
-            st.session_state.agent_outputs["copywriter"] = copywriter_output
-        
-        if verification_output and not verification_output.startswith("Error"):
-            st.session_state.messages.append({"role": "assistant", "content": f"🔍 **DeepSeek Verification Report:**\n\n{verification_output}"})
-            st.chat_message("assistant").write(f"🔍 **DeepSeek Verification Report:**\n\n{verification_output}")
-            st.session_state.agent_outputs["verification"] = verification_output
-        
-        # Mark processing as complete
-        st.session_state.processing_complete = True
-        
-        # Show completion message
-        st.success("🎉 Travel planning completed! Check the chat above for your complete itinerary and verification report.")
-        
-        # Force rerun to update sidebar
         st.rerun()
+    
+    # Process agents based on current state
+    if st.session_state.current_prompt and not st.session_state.processing_complete:
+        # Initialize agents if not already done
+        if st.session_state.agent_status["strategist"] == "pending":
+            # Step 1: Strategist Agent
+            st.session_state.current_agent = "strategist"
+            st.session_state.agent_status["strategist"] = "running"
+            
+            # Initialize agents
+            strategist_executor, copywriter_executor, groq_client = initialize_agents()
+            if strategist_executor is None:
+                st.error("Error: Could not initialize agents")
+                return
+            
+            with st.spinner("🤔 Strategist Agent is analyzing your requirements..."):
+                strategist_response = strategist_executor.invoke(
+                    {"input": st.session_state.current_prompt},
+                    config={"configurable": {"session_id": st.session_state["session_id_strategist"]}}
+                )
+                strategist_output = strategist_response.get('output')
+            
+            # Display strategist output
+            if strategist_output and not strategist_output.startswith("Error"):
+                st.session_state.agent_outputs["strategist"] = strategist_output
+                st.session_state.messages.append({"role": "assistant", "content": f"🤔 **Strategist Agent Analysis:**\n\n{strategist_output}"})
+                st.chat_message("assistant").write(f"🤔 **Strategist Agent Analysis:**\n\n{strategist_output}")
+                st.session_state.agent_status["strategist"] = "completed"
+                st.rerun()
+        
+        elif st.session_state.agent_status["strategist"] == "completed" and st.session_state.agent_status["copywriter"] == "pending":
+            # Step 2: Copywriter Agent
+            st.session_state.current_agent = "copywriter"
+            st.session_state.agent_status["copywriter"] = "running"
+            
+            # Initialize agents
+            strategist_executor, copywriter_executor, groq_client = initialize_agents()
+            if copywriter_executor is None:
+                st.error("Error: Could not initialize copywriter agent")
+                return
+            
+            with st.spinner("✍️ Copywriter Agent is creating your itinerary..."):
+                copywriter_prompt = get_copywriter_agent_prompt(st.session_state.current_prompt, st.session_state.agent_outputs["strategist"])
+                copywriter_response = copywriter_executor.invoke({
+                    "input": copywriter_prompt
+                })
+                copywriter_output = copywriter_response.get('output')
+            
+            # Display copywriter output
+            if copywriter_output and not copywriter_output.startswith("Error"):
+                st.session_state.agent_outputs["copywriter"] = copywriter_output
+                st.session_state.messages.append({"role": "assistant", "content": f"✍️ **Copywriter Agent Itinerary:**\n\n{copywriter_output}"})
+                st.chat_message("assistant").write(f"✍️ **Copywriter Agent Itinerary:**\n\n{copywriter_output}")
+                st.session_state.agent_status["copywriter"] = "completed"
+                st.rerun()
+        
+        elif st.session_state.agent_status["copywriter"] == "completed" and st.session_state.agent_status["verification"] == "pending":
+            # Step 3: Verification Agent
+            st.session_state.current_agent = "verification"
+            st.session_state.agent_status["verification"] = "running"
+            
+            with st.spinner("🔍 DeepSeek Agent is verifying your itinerary..."):
+                verification_output = run_verification_agent(
+                    st.session_state.current_prompt, 
+                    st.session_state.agent_outputs["strategist"], 
+                    st.session_state.agent_outputs["copywriter"]
+                )
+            
+            # Display verification output
+            if verification_output and not verification_output.startswith("Error"):
+                st.session_state.agent_outputs["verification"] = verification_output
+                st.session_state.messages.append({"role": "assistant", "content": f"🔍 **DeepSeek Verification Report:**\n\n{verification_output}"})
+                st.chat_message("assistant").write(f"🔍 **DeepSeek Verification Report:**\n\n{verification_output}")
+                st.session_state.agent_status["verification"] = "completed"
+            
+            # Mark processing as complete
+            st.session_state.processing_complete = True
+            st.session_state.current_agent = "none"
+            
+            # Show completion message
+            st.success("🎉 Travel planning completed! Check the chat above for your complete itinerary and verification report.")
+            st.rerun()
 
 if __name__ == "__main__":
     main() 
