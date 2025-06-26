@@ -1,7 +1,6 @@
 agent/
 database/
 rag/
-requirements.txt
 app_multi_streamlit.py
 *.pyc
 .env
