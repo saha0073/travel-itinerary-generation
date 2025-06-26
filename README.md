@@ -157,6 +157,3 @@ For comprehensive workflow diagrams, agent interaction sequences, and detailed s
 4. Test with the Streamlit interface
 5. Submit a pull request
 
-## License
-
-This project is for interview preparation and demonstration purposes. 
